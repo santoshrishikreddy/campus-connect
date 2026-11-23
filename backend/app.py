@@ -10,7 +10,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
 from postgrest import APIError
 from supabase import Client, create_client
-from supabase.lib.client_options import ClientOptions
+from supabase.lib.client_options import SyncClientOptions
 
 load_dotenv()
 app = FastAPI(title="Campus Connect API", version="1.0.0")
@@ -27,7 +27,7 @@ def config() -> tuple[str, str]:
 def supabase(access_token: str | None = None) -> Client:
     url, key = config()
     headers = {"Authorization": f"Bearer {access_token}"} if access_token else {}
-    return create_client(url, key, ClientOptions(headers=headers))
+    return create_client(url, key, SyncClientOptions(headers=headers))
 
 
 def current_user(authorization: Annotated[str | None, Header()] = None) -> tuple[UUID, str]:
