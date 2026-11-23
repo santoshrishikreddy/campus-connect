@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f5f5f1" />
+  <meta name="description" content="A multilingual voice guide to public benefit schemes in India." />
+  <title>saathi — benefits, made human</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700;750&family=Manrope:wght@400;500;600;650;700;750;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body data-theme="light">
+  <div class="app-shell">
+    <aside class="rail">
+      <a class="brand-mark" href="#home" aria-label="Saathi home"><span class="mark-symbol"><i></i><i></i><i></i><i></i></span></a>
+      <nav class="rail-nav" aria-label="Main navigation">
+        <a class="rail-link active" href="#home" title="Discover" aria-label="Discover"><span class="icon">◉</span></a>
+        <a class="rail-link" href="#schemes" title="Schemes" aria-label="Schemes"><span class="icon">▤</span></a>
+        <a class="rail-link" href="#saved" title="Saved" aria-label="Saved"><span class="icon">♡</span></a>
+      </nav>
+      <button class="avatar" title="Profile">A</button>
+    </aside>
+
+    <main class="workspace" id="home">
+      <header class="topbar">
+        <a class="wordmark" href="#home">saathi<span class="wordmark-dot">.</span></a>
+        <div class="topbar-right">
+          <span class="live-note"><span class="live-dot"></span> YOUR BENEFITS, IN ONE PLACE</span>
+          <button class="icon-button appearance" id="themeToggle" aria-label="Change appearance" title="Change appearance"><span>◐</span></button>
+          <button class="icon-button text-smaller" id="fontDown" aria-label="Decrease text size" title="Decrease text size">A<sup>−</sup></button>
+          <button class="icon-button text-larger" id="fontUp" aria-label="Increase text size" title="Increase text size">A<sup>+</sup></button>
+          <button class="language-select" id="headerLanguage" aria-label="Select language">EN <span>⌄</span></button>
+        </div>
+      </header>
+
+      <div class="page-grid">
+        <section class="content-column">
+          <div class="welcome-row"><div><p class="eyebrow"><span class="tiny-sun">✳</span> A LITTLE HELP GOES A LONG WAY</p><h1>Good things are<br/>closer than you think<span class="title-period">.</span></h1></div><div class="date-chip"><span>INDIA</span><span>🇮🇳</span></div></div>
+
+          <section class="hero-card" aria-label="Find your benefits">
+            <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div><div class="hero-sun"></div><div class="hero-grain"></div>
+            <div class="hero-content"><span class="hero-tag"><span class="hero-tag-dot"></span> MADE FOR YOU</span><h2>There’s support<br/>with your name on it.</h2><p>Tell us a little about yourself. We’ll find the benefits that fit your life.</p><button class="hero-cta" id="startChat">Find my schemes <span>↗</span></button></div>
+            <div class="hero-visual" aria-hidden="true"><div class="visual-halo"></div><div class="visual-ring ring-back"></div><div class="visual-ring ring-front"></div><div class="visual-disc"><span class="disc-sun">✳</span><span class="disc-wave wave-a"></span><span class="disc-wave wave-b"></span></div><div class="float-pill pill-one"><span>✳</span> MADE FOR EVERYONE</div><div class="float-pill pill-two">✦ &nbsp;GOOD THINGS AHEAD</div><span class="spark spark-one">✳</span><span class="spark spark-two">✳</span></div>
+            <div class="hero-bottom"><span>ELIGIBILITY, MADE SIMPLE</span><span>TAKES ABOUT 2 MINUTES <span class="bottom-arrow">↗</span></span></div>
+          </section>
+
+          <section class="categories-section" id="schemes">
+            <div class="section-heading"><div><p class="eyebrow muted-eyebrow">A GOOD PLACE TO START</p><h2>Find your kind of support</h2></div><button class="see-all" id="showAll">See all schemes <span>↗</span></button></div>
+            <div class="category-grid" id="categoryGrid">
+              <button class="category-card cat-green" data-filter="farm"><span class="category-emoji">🌱</span><span class="category-name">For farmers</span><span class="category-count">INCOME · CROPS · TOOLS</span><span class="category-arrow">↗</span></button>
+              <button class="category-card cat-lilac" data-filter="women"><span class="category-emoji">🌼</span><span class="category-name">For women</span><span class="category-count">SAFETY · SAVINGS · WORK</span><span class="category-arrow">↗</span></button>
+              <button class="category-card cat-peach" data-filter="students"><span class="category-emoji">📚</span><span class="category-name">For students</span><span class="category-count">SCHOOL · SKILLS · JOBS</span><span class="category-arrow">↗</span></button>
+              <button class="category-card cat-blue" data-filter="business"><span class="category-emoji">🧵</span><span class="category-name">Start a business</span><span class="category-count">LOANS · TRAINING · GROWTH</span><span class="category-arrow">↗</span></button>
+              <button class="category-card cat-yellow" data-filter="health"><span class="category-emoji">☀️</span><span class="category-name">Health & family</span><span class="category-count">CARE · FOOD · HOUSING</span><span class="category-arrow">↗</span></button>
+              <button class="category-card cat-rose" data-filter="jobs"><span class="category-emoji">🛠️</span><span class="category-name">Jobs & skills</span><span class="category-count">WORK · TRAINING · WAGES</span><span class="category-arrow">↗</span></button>
+              <button class="category-card cat-blue" data-filter="age"><span class="category-emoji">🌟</span><span class="category-name">Young people</span><span class="category-count">SCHOLARSHIPS · SKILLS · JOBS</span><span class="category-arrow">↗</span></button>
+              <button class="category-card cat-yellow" data-filter="senior"><span class="category-emoji">🌻</span><span class="category-name">Older adults</span><span class="category-count">PENSIONS · HEALTH · CARE</span><span class="category-arrow">↗</span></button>
+              <button class="category-card cat-lilac" data-filter="caste"><span class="category-emoji">🤝</span><span class="category-name">SC / ST communities</span><span class="category-count">BUSINESS · EDUCATION · SUPPORT</span><span class="category-arrow">↗</span></button>
+            </div>
+          </section>
+
+          <section class="schemes-section" id="allSchemes">
+            <div class="section-heading scheme-heading"><div><p class="eyebrow muted-eyebrow">A FEW PLACES TO BEGIN</p><h2>Popular right now</h2></div><span class="verified-note"><span>✳</span> FROM OFFICIAL SOURCES</span></div>
+            <div class="scheme-list" id="schemeList"></div>
+            <div class="data-note"><span class="info-mark">i</span><p>Eligibility depends on your state and circumstances. We’ll double-check the details with you. <a href="https://www.myscheme.gov.in/" target="_blank" rel="noreferrer">Learn about myScheme ↗</a></p></div>
+          </section>
+          <footer class="footer"><span>Made with care, for everyone in India <span class="footer-heart">♥</span></span><span>YOUR DETAILS STAY YOURS</span></footer>
+        </section>
+
+        <aside class="assistant-column" aria-label="Saathi voice assistant"><div class="assistant-card">
+          <div class="assistant-head"><div class="assistant-brand"><span class="assistant-mark"><i></i><i></i><i></i><i></i></span><span><b>saathi</b><small>YOUR SCHEME GUIDE</small></span></div><button class="more-button" id="clearChat" aria-label="Reset conversation" title="Reset conversation">↻</button></div>
+          <div class="assistant-divider"></div>
+          <div class="agent-state"><span class="agent-avatar"><span class="avatar-glow"></span><span class="avatar-face">✳</span><i class="agent-online"></i></span><span class="agent-intro"><b>Your friendly guide</b><small><span class="live-dot"></span> Here to help, anytime</small></span><span class="secure-chip">PRIVATE <span>✳</span></span></div>
+          <div class="language-line"><span>LET’S SPEAK YOUR LANGUAGE</span><button class="inline-language" id="agentLanguage">English <span>⌄</span></button></div>
+          <div class="language-options" id="languageOptions" hidden></div>
+          <div class="voice-welcome"><div class="welcome-time">JUST NOW <span>·</span> YOUR PERSONAL GUIDE</div><div class="message-bubble">Namaste! 👋 I can help find government schemes that match your life. Want to get started?</div></div>
+          <div class="suggestion-label">A GOOD PLACE TO START</div><div class="quick-prompts" id="quickPrompts"><button>👩 &nbsp;I’m a woman</button><button>🌱 &nbsp;I’m a farmer</button><button>🎓 &nbsp;I’m a student</button><button>💼 &nbsp;Looking for work</button></div>
+          <div class="chat-log" id="chatLog" aria-live="polite"></div>
+          <div class="chat-spacer"></div>
+          <div class="voice-area"><div class="voice-hint" id="voiceHint">PRESS AND SPEAK, OR TYPE BELOW</div><button class="mic-button" id="micButton" aria-label="Start speaking"><span class="mic-halo"></span><span class="mic-icon">🎙</span><span class="mic-ripple ripple-a"></span><span class="mic-ripple ripple-b"></span></button><div class="voice-caption" id="voiceCaption">TAP TO SPEAK <span>·</span> I’M LISTENING</div></div>
+          <form class="chat-input-row" id="chatForm"><input id="chatInput" autocomplete="off" placeholder="Tell me about yourself…" aria-label="Type a message"/><button type="submit" aria-label="Send message">↗</button></form>
+          <p class="privacy-foot"><span>▣</span> Your conversation stays private and secure</p>
+        </div><div class="help-card"><span class="help-icon">✿</span><span><b>A real person, too.</b><small>Need a hand? Get support in your language.</small></span><button aria-label="Get support">↗</button></div></aside>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="./app.js"></script>
+</body>
+</html>

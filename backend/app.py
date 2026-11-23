@@ -1,166 +1,185 @@
-"""Unauthenticated JSON API for the Campus Connect Supabase database."""
+"""Campus Connect API backed by Supabase/PostgreSQL."""
 
 import os
-from functools import wraps
+from functools import lru_cache
+from typing import Annotated
 from uuid import UUID
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from fastapi import Depends, FastAPI, Header, HTTPException, status
+from pydantic import BaseModel, ConfigDict, Field
 from postgrest import APIError
 from supabase import Client, create_client
+from supabase.lib.client_options import ClientOptions
 
 load_dotenv()
-
-app = Flask(__name__)
-_supabase: Client | None = None
+app = FastAPI(title="Campus Connect API", version="1.0.0")
 
 
-def get_supabase() -> Client:
-    """Create the Supabase client on first request, with a useful config error."""
-    global _supabase
-    if _supabase is None:
-        url = os.getenv("SUPABASE_URL")
-        key = os.getenv("SUPABASE_PUBLISHABLE_KEY")
-        if not url or not key:
-            raise RuntimeError(
-                "Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in the environment."
-            )
-        _supabase = create_client(url, key)
-    return _supabase
+@lru_cache(maxsize=1)
+def config() -> tuple[str, str]:
+    url, key = os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_PUBLISHABLE_KEY")
+    if not url or not key:
+        raise HTTPException(status_code=503, detail="Supabase is not configured.")
+    return url, key
 
 
-def api_errors(handler):
-    @wraps(handler)
-    def wrapped(*args, **kwargs):
-        try:
-            return handler(*args, **kwargs)
-        except RuntimeError as error:
-            return jsonify(error=str(error)), 503
-        except APIError as error:
-            code = getattr(error, "code", None)
-            status = 409 if code == "23505" else 400 if code in {
-                "23503", "23502", "22P02", "23514"
-            } else 502
-            return jsonify(error="Database request failed", details=error.message), status
-
-    return wrapped
+def supabase(access_token: str | None = None) -> Client:
+    url, key = config()
+    headers = {"Authorization": f"Bearer {access_token}"} if access_token else {}
+    return create_client(url, key, ClientOptions(headers=headers))
 
 
-def json_object():
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, dict):
-        return None, (jsonify(error="Request body must be a JSON object."), 400)
-    return payload, None
-
-
-def validate_uuid(value: str):
+def current_user(authorization: Annotated[str | None, Header()] = None) -> tuple[UUID, str]:
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="A valid bearer token is required.")
+    token = authorization.split(" ", 1)[1].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="A valid bearer token is required.")
     try:
-        UUID(value)
-    except (ValueError, TypeError, AttributeError):
-        return jsonify(error="id must be a valid UUID."), 400
-    return None
+        user = supabase().auth.get_user(token).user
+        if user is None:
+            raise ValueError("Missing user")
+        return UUID(user.id), token
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.") from exc
 
 
-def collection_routes(table: str, fields: set[str], required: set[str]):
-    """Register list/create and item read/update/delete routes for one table."""
+class EventCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    title: str = Field(min_length=1, max_length=200)
+    capacity: int | None = Field(default=None, ge=0)
+    status: str | None = None
 
-    @app.get(f"/api/{table}", endpoint=f"{table}_list")
-    @api_errors
-    def list_items():
-        query = get_supabase().table(table).select("*")
-        # Registrations can be filtered without requiring a separate endpoint.
-        if table == "registrations":
-            for key in ("user_id", "event_id"):
-                value = request.args.get(key)
-                if value:
-                    invalid = validate_uuid(value)
-                    if invalid:
-                        return invalid
-                    query = query.eq(key, value)
-        return jsonify(data=query.execute().data), 200
 
-    @app.post(f"/api/{table}", endpoint=f"{table}_create")
-    @api_errors
-    def create_item():
-        payload, error = json_object()
-        if error:
-            return error
-        unknown = set(payload) - fields
-        if unknown:
-            return jsonify(error="Unknown fields", fields=sorted(unknown)), 400
-        missing = required - payload.keys()
-        if missing:
-            return jsonify(error="Missing required fields", fields=sorted(missing)), 400
-        result = get_supabase().table(table).insert(payload).execute()
-        return jsonify(data=result.data[0] if result.data else None), 201
+class EventUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    capacity: int | None = Field(default=None, ge=0)
+    status: str | None = None
 
-    @app.get(f"/api/{table}/<item_id>", endpoint=f"{table}_get")
-    @api_errors
-    def get_item(item_id):
-        invalid = validate_uuid(item_id)
-        if invalid:
-            return invalid
-        result = get_supabase().table(table).select("*").eq("id", item_id).maybe_single().execute()
-        if result.data is None:
-            return jsonify(error=f"{table[:-1] if table.endswith('s') else table} not found."), 404
-        return jsonify(data=result.data), 200
 
-    @app.patch(f"/api/{table}/<item_id>", endpoint=f"{table}_update")
-    @api_errors
-    def update_item(item_id):
-        invalid = validate_uuid(item_id)
-        if invalid:
-            return invalid
-        payload, error = json_object()
-        if error:
-            return error
-        if not payload:
-            return jsonify(error="Provide at least one field to update."), 400
-        unknown = set(payload) - fields
-        if unknown:
-            return jsonify(error="Unknown fields", fields=sorted(unknown)), 400
-        result = get_supabase().table(table).update(payload).eq("id", item_id).execute()
-        if not result.data:
-            return jsonify(error=f"{table[:-1] if table.endswith('s') else table} not found."), 404
-        return jsonify(data=result.data[0]), 200
+class RegistrationCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    event_id: UUID
 
-    @app.delete(f"/api/{table}/<item_id>", endpoint=f"{table}_delete")
-    @api_errors
-    def delete_item(item_id):
-        invalid = validate_uuid(item_id)
-        if invalid:
-            return invalid
-        result = get_supabase().table(table).delete().eq("id", item_id).execute()
-        if not result.data:
-            return jsonify(error=f"{table[:-1] if table.endswith('s') else table} not found."), 404
-        return jsonify(data=result.data[0]), 200
+
+def db_error(exc: APIError) -> HTTPException:
+    code = getattr(exc, "code", None)
+    if code == "23505":
+        return HTTPException(status_code=409, detail="You are already registered for this event.")
+    if code == "P0001":
+        message = (getattr(exc, "message", "") or "").lower()
+        if "full" in message:
+            return HTTPException(status_code=409, detail="This event is full.")
+        if "duplicate" in message or "already" in message:
+            return HTTPException(status_code=409, detail="You are already registered for this event.")
+        if "not found" in message:
+            return HTTPException(status_code=404, detail="Event not found.")
+        return HTTPException(status_code=400, detail="Registration could not be completed.")
+    if code in {"23503", "23502", "22P02", "23514"}:
+        return HTTPException(status_code=400, detail="Invalid database request.")
+    return HTTPException(status_code=502, detail="Database request failed.")
 
 
 @app.get("/")
 def index():
-    return jsonify(
-        name="Campus Connect API",
-        endpoints={
-            "users": "/api/users",
-            "events": "/api/events",
-            "registrations": "/api/registrations",
-        },
-    )
+    return {"name": "Campus Connect API", "docs": "/docs", "endpoints": ["/api/events", "/api/registrations"]}
 
 
 @app.get("/health")
 def health():
-    return jsonify(status="ok")
+    return {"status": "ok"}
 
 
-collection_routes("users", {"email", "role"}, {"email"})
-collection_routes(
-    "events", {"organizer_id", "title", "capacity", "status"}, {"title"}
-)
-collection_routes(
-    "registrations", {"user_id", "event_id"}, {"user_id", "event_id"}
-)
+@app.get("/api/events")
+def list_events():
+    try:
+        return {"data": supabase().table("events").select("*").execute().data}
+    except APIError as exc:
+        raise db_error(exc) from exc
+
+
+@app.get("/api/events/{event_id}")
+def get_event(event_id: UUID):
+    try:
+        result = supabase().table("events").select("*").eq("id", str(event_id)).maybe_single().execute()
+        if result.data is None:
+            raise HTTPException(status_code=404, detail="Event not found.")
+        return {"data": result.data}
+    except APIError as exc:
+        raise db_error(exc) from exc
+
+
+@app.post("/api/events", status_code=status.HTTP_201_CREATED)
+def create_event(body: EventCreate, identity: tuple[UUID, str] = Depends(current_user)):
+    user_id, token = identity
+    try:
+        result = supabase(token).table("events").insert({**body.model_dump(), "organizer_id": str(user_id)}).execute()
+        return {"data": result.data[0] if result.data else None}
+    except APIError as exc:
+        raise db_error(exc) from exc
+
+
+@app.patch("/api/events/{event_id}")
+def update_event(event_id: UUID, body: EventUpdate, identity: tuple[UUID, str] = Depends(current_user)):
+    patch = body.model_dump(exclude_unset=True)
+    if not patch:
+        raise HTTPException(status_code=400, detail="Provide at least one field to update.")
+    user_id, token = identity
+    try:
+        result = supabase(token).table("events").update(patch).eq("id", str(event_id)).eq("organizer_id", str(user_id)).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Event not found.")
+        return {"data": result.data[0]}
+    except APIError as exc:
+        raise db_error(exc) from exc
+
+
+@app.delete("/api/events/{event_id}")
+def delete_event(event_id: UUID, identity: tuple[UUID, str] = Depends(current_user)):
+    user_id, token = identity
+    try:
+        result = supabase(token).table("events").delete().eq("id", str(event_id)).eq("organizer_id", str(user_id)).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Event not found.")
+        return {"data": result.data[0]}
+    except APIError as exc:
+        raise db_error(exc) from exc
+
+
+@app.get("/api/registrations")
+def list_registrations(identity: tuple[UUID, str] = Depends(current_user)):
+    user_id, token = identity
+    try:
+        rows = supabase(token).table("registrations").select("*").eq("user_id", str(user_id)).execute().data
+        return {"data": rows}
+    except APIError as exc:
+        raise db_error(exc) from exc
+
+
+@app.post("/api/registrations", status_code=status.HTTP_201_CREATED)
+def register(body: RegistrationCreate, identity: tuple[UUID, str] = Depends(current_user)):
+    user_id, token = identity
+    try:
+        result = supabase(token).rpc("register_for_event", {"p_event_id": str(body.event_id)}).execute()
+        return {"data": result.data}
+    except APIError as exc:
+        raise db_error(exc) from exc
+
+
+@app.delete("/api/registrations/{registration_id}")
+def unregister(registration_id: UUID, identity: tuple[UUID, str] = Depends(current_user)):
+    user_id, token = identity
+    try:
+        result = supabase(token).table("registrations").delete().eq("id", str(registration_id)).eq("user_id", str(user_id)).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Registration not found.")
+        return {"data": result.data[0]}
+    except APIError as exc:
+        raise db_error(exc) from exc
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=False)
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")), reload=False)
