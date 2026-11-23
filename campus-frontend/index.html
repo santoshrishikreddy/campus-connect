@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101528" />
+  <meta name="description" content="Discover campus events, meet your community, and save your spot." />
+  <title>Campus Connect — Find your people</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Campus Connect home"><span class="brand-icon">C<span>+</span></span><span>campus<span class="brand-light">connect</span></span></a>
+    <nav aria-label="Main navigation"><a href="#discover">Discover</a><a href="#how">How it works</a></nav>
+    <div class="account-actions"><span class="account-label" id="accountLabel">Your campus, together</span><button class="button button-quiet" id="signInButton" type="button">Sign in</button><button class="button button-quiet" id="signOutButton" type="button" hidden>Sign out</button></div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="spark">✳</span> YOUR CAMPUS, YOUR COMMUNITY</div>
+        <h1>Make room for<br /><span>what brings us</span><br />together.</h1>
+        <p>Find the workshops, meetups, and campus moments you’ll be glad you showed up for.</p>
+        <a class="button button-lime" href="#discover">Explore events <span>↘</span></a>
+        <div class="hero-trust"><span class="pulse"></span><span>Open to every curious mind</span><span class="hero-divider">·</span><span>Real events, one campus</span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="art-orbit orbit-a"></div><div class="art-orbit orbit-b"></div>
+        <div class="art-sticker sticker-purple">MAKE<br />SOMETHING<br />HAPPEN <b>↗</b></div>
+        <div class="art-disc"><span>cc</span><i>✳</i></div>
+        <div class="art-sticker sticker-lime">GOOD PEOPLE.<br />GOOD IDEAS.</div>
+        <div class="art-spark spark-a">✳</div><div class="art-spark spark-b">✳</div>
+      </div>
+      <div class="hero-bottom"><span>CONNECTED BY CURIOSITY</span><span>SCROLL TO FIND YOUR NEXT THING ↓</span></div>
+    </section>
+
+    <section class="discover-section" id="discover">
+      <div class="section-intro"><div><div class="eyebrow light-eyebrow">THE CAMPUS CALENDAR</div><h2>Find your next <span>favorite.</span></h2></div><button class="button button-outline" id="hostButton" type="button">＋ Host an event</button></div>
+      <div class="stats-row" aria-label="Event summary"><div class="stat"><b id="eventCount">—</b><span>events to explore</span></div><div class="stat"><b id="openCount">—</b><span>open to join</span></div><div class="stat stat-note" id="apiStatus" role="status" aria-live="polite"><span class="pulse"></span> Connecting to the events board…</div></div>
+      <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Search workshops, meetups, ideas…" aria-label="Search events" /></label><div class="filters" role="group" aria-label="Filter events"><button class="filter active" data-filter="all" type="button">All events</button><button class="filter" data-filter="open" type="button">Open spots</button><button class="filter" data-filter="mine" type="button">My RSVPs</button></div><button class="icon-button" id="refreshButton" type="button" aria-label="Refresh events" title="Refresh">↻</button></div>
+      <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+      <div id="eventGrid" class="event-grid" aria-live="polite"></div>
+      <div class="empty-state" id="emptyState" hidden><span>✳</span><h3>No events found</h3><p>Try another search or host the first event that brings people together.</p></div>
+    </section>
+
+    <section class="how-section" id="how"><div class="eyebrow">SIMPLE AS SHOWING UP</div><h2>Find it. Join it. <span>Make it yours.</span></h2><div class="steps"><article><div class="step-no">01</div><h3>Explore</h3><p>Browse the latest events from clubs, teams, and people on campus.</p></article><article><div class="step-no">02</div><h3>Save your spot</h3><p>Sign in and RSVP. Your place is reserved in one quick step.</p></article><article><div class="step-no">03</div><h3>Bring an idea</h3><p>Host an event and find the people who want to be there.</p></article></div></section>
+  </main>
+  <footer><a class="brand footer-brand" href="#top"><span class="brand-icon">C<span>+</span></span><span>campus<span class="brand-light">connect</span></span></a><span>Built for the people who make a campus feel like home.</span><a href="https://campus-connect-api-lxnl.onrender.com/docs" target="_blank" rel="noreferrer">API status & docs ↗</a></footer>
+
+  <dialog id="authDialog" class="dialog"><form id="authForm" class="dialog-card"><button class="dialog-close" type="button" data-close="authDialog" aria-label="Close">×</button><div class="eyebrow light-eyebrow">CAMPUS CONNECT ACCOUNT</div><h2 id="authTitle">Welcome back.</h2><p id="authDescription">Sign in to RSVP and keep track of your events.</p><label>Email<input type="email" name="email" autocomplete="email" required /></label><label>Password<input type="password" name="password" autocomplete="current-password" minlength="6" required /></label><p id="authError" class="form-error" role="alert" hidden></p><button id="authSubmit" class="button button-dark" type="submit">Sign in</button><button id="authSwitch" class="text-button" type="button">New here? Create an account</button></form></dialog>
+  <dialog id="eventDialog" class="dialog"><form id="eventForm" class="dialog-card"><button class="dialog-close" type="button" data-close="eventDialog" aria-label="Close">×</button><div class="eyebrow light-eyebrow">PUT IT ON THE CALENDAR</div><h2>Host an event.</h2><p>Give your campus something to show up for.</p><label>Event title<input name="title" maxlength="200" required placeholder="e.g. Design your first portfolio" /></label><label>Capacity <span class="optional">(leave blank for no limit)</span><input name="capacity" type="number" min="1" step="1" placeholder="40" /></label><label>Registration<select name="status"><option value="OPEN">Open</option><option value="CLOSED">Closed</option></select></label><p id="eventError" class="form-error" role="alert" hidden></p><button class="button button-dark" type="submit">Publish event <span>↗</span></button></form></dialog>
+</body>
+</html>
