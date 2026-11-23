@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700;750&family=Manrope:wght@400;500;600;650;700;750;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./events.css" />
 </head>
 <body data-theme="light">
   <div class="app-shell">
@@ -18,6 +19,7 @@
       <nav class="rail-nav" aria-label="Main navigation">
         <a class="rail-link active" href="#home" title="Discover" aria-label="Discover"><span class="icon">◉</span></a>
         <a class="rail-link" href="#schemes" title="Schemes" aria-label="Schemes"><span class="icon">▤</span></a>
+        <a class="rail-link" href="#events" title="Campus events" aria-label="Campus events"><span class="icon">◷</span></a>
         <a class="rail-link" href="#saved" title="Saved" aria-label="Saved"><span class="icon">♡</span></a>
       </nav>
       <button class="avatar" title="Profile">A</button>
@@ -59,6 +61,16 @@
               <button class="category-card cat-yellow" data-filter="senior"><span class="category-emoji">🌻</span><span class="category-name">Older adults</span><span class="category-count">PENSIONS · HEALTH · CARE</span><span class="category-arrow">↗</span></button>
               <button class="category-card cat-lilac" data-filter="caste"><span class="category-emoji">🤝</span><span class="category-name">SC / ST communities</span><span class="category-count">BUSINESS · EDUCATION · SUPPORT</span><span class="category-arrow">↗</span></button>
             </div>
+          </section>
+
+          <section class="events-section" id="events" aria-labelledby="eventsTitle">
+            <div class="section-heading">
+              <div><p class="eyebrow muted-eyebrow">CAMPUS CONNECT · LIVE DATA</p><h2 id="eventsTitle">Campus events</h2></div>
+              <button class="see-all" id="refreshEvents" type="button">Refresh <span>↻</span></button>
+            </div>
+            <p class="events-status" id="eventsStatus" role="status" aria-live="polite">Loading events from Campus Connect…</p>
+            <div class="events-list" id="eventsList"></div>
+            <p class="events-source">Events are loaded from the <a href="https://campus-connect-api-lxnl.onrender.com/api/events" target="_blank" rel="noreferrer">Campus Connect API ↗</a></p>
           </section>
 
           <section class="schemes-section" id="allSchemes">

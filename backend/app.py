@@ -7,6 +7,7 @@ from uuid import UUID
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 from postgrest import APIError
 from supabase import Client, create_client
@@ -14,6 +15,20 @@ from supabase.lib.client_options import SyncClientOptions
 
 load_dotenv()
 app = FastAPI(title="Campus Connect API", version="1.0.0")
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "https://campus-connect-frontend-lemon.vercel.app,http://localhost:5173",
+    ).split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 
 
 @lru_cache(maxsize=1)
